@@ -28,19 +28,38 @@ sudo apt-get install cuda-8-0
 
 
 # Develop Envirement
-WSL2 Ubuntu 20.04.6 LTS, anaconda python 2.7
+WSL2 Ubuntu 20.04.6 LTS, Window10, anaconda python 2.7
+
+# install WSL2
+```
+window10 1093, powershell
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart 
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+wsl --set-default-version 2 
+```
+# Enable NVIDIA CUDA on WSL2
+https://learn.microsoft.com/en-us/windows/ai/directml/gpu-cuda-in-wsl
+
+https://docs.nvidia.com/cuda/wsl-user-guide/index.html#getting-started-with-cuda-on-wsl
+
 
 ```
 # 1. NVIDIA Driver Install
 # 2. WSL2 CUDA Install
 
-
 ```
 
 
-
+# Install Anaconda on WSL2
 ```
-# how to start
+wget https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh
+sh Anaconda3-2022.10-Linux-x86_64.sh
+source ~/.bashrc
+```
+
+
+# Start env in WSL2  (python 2.7 or python 3.6)
+```
 conda create -n piigan python=2.7
 conda activate piigan
 pip install -r requirement.txt
