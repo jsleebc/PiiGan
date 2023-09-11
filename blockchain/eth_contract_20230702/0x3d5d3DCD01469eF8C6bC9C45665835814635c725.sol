@@ -1,0 +1,26 @@
+{{
+  "language": "Solidity",
+  "sources": {
+    "contracts/mrfwashere.sol": {
+      "content": "pragma solidity ^0.8.0;\r\n\r\n// Mr F is here again, with a shitcoin 🤡\r\n// Don't buy, NFA, blah blah\r\n// https://twitter.com/VitalikButerin/status/1333744735735795712\r\n// https://decrypt.co/50055/the-strange-message-written-on-ethereum-2-0s-first-block\r\n// https://twitter.com/MrFwashere\r\n\r\ninterface ERC20 {\r\n    function totalSupply() external view returns (uint256);\r\n    function balanceOf(address who) external view returns (uint256);\r\n    function allowance(address owner, address spender) external view returns (uint256);\r\n    function transfer(address to, uint256 value) external returns (bool);\r\n    function approve(address spender, uint256 value) external returns (bool);\r\n    function approveAndCall(address spender, uint tokens, bytes calldata data) external returns (bool success);\r\n    function transferFrom(address from, address to, uint256 value) external returns (bool);\r\n\r\n    event Transfer(address indexed from, address indexed to, uint256 value);\r\n    event Approval(address indexed owner, address indexed spender, uint256 value);\r\n}\r\n\r\ninterface ApproveAndCallFallBack {\r\n    function receiveApproval(address from, uint256 tokens, address token, bytes calldata data) external;\r\n}\r\n\r\ncontract MrFwashere is ERC20 {\r\n    string public constant name = \"Mr F was here\";\r\n    string public constant symbol = \"MRF\";\r\n    uint8 public constant decimals = 18;\r\n\r\n    uint256 private _totalSupply = 11364381 * 10**18; \r\n    // https://beaconscan.com/slot/1 -> https://etherscan.io/block/11364381\r\n\r\n    mapping(address => uint256) private balances;\r\n    mapping(address => mapping(address => uint256)) private allowed;\r\n\r\n    constructor() {\r\n        balances[msg.sender] = _totalSupply;\r\n        emit Transfer(address(0), msg.sender, _totalSupply);\r\n    }\r\n\r\n    function totalSupply() public view override returns (uint256) {\r\n        return _totalSupply;\r\n    }\r\n\r\n    function balanceOf(address player) public view override returns (uint256) {\r\n        return balances[player];\r\n    }\r\n\r\n    function allowance(address player, address spender) public view override returns (uint256) {\r\n        return allowed[player][spender];\r\n    }\r\n\r\n    function transfer(address to, uint256 value) public override returns (bool) {\r\n        require(value <= balances[msg.sender]);\r\n        require(to != address(0));\r\n\r\n        balances[msg.sender] -= value;\r\n        balances[to] += value;\r\n\r\n        emit Transfer(msg.sender, to, value);\r\n        return true;\r\n    }\r\n\r\n    function multiTransfer(address[] memory receivers, uint256[] memory amounts) public {\r\n        for (uint256 i = 0; i < receivers.length; i++) {\r\n            transfer(receivers[i], amounts[i]);\r\n        }\r\n    }\r\n\r\n    function approve(address spender, uint256 value) public override returns (bool) {\r\n        require(spender != address(0));\r\n        allowed[msg.sender][spender] = value;\r\n        emit Approval(msg.sender, spender, value);\r\n        return true;\r\n    }\r\n\r\n    function approveAndCall(address spender, uint256 tokens, bytes calldata data) external override returns (bool) {\r\n        allowed[msg.sender][spender] = tokens;\r\n        emit Approval(msg.sender, spender, tokens);\r\n        ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, address(this), data);\r\n        return true;\r\n    }\r\n\r\n    function transferFrom(address from, address to, uint256 value) public override returns (bool) {\r\n        require(value <= balances[from]);\r\n        require(value <= allowed[from][msg.sender]);\r\n        require(to != address(0));\r\n    \r\n        balances[from] -= value;\r\n        balances[to] += value;\r\n    \r\n        allowed[from][msg.sender] -= value;\r\n    \r\n        emit Transfer(from, to, value);\r\n        return true;\r\n    }\r\n\r\n    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {\r\n        require(spender != address(0));\r\n        allowed[msg.sender][spender] += addedValue;\r\n        emit Approval(msg.sender, spender, allowed[msg.sender][spender]);\r\n        return true;\r\n    }\r\n\r\n    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {\r\n        require(spender != address(0));\r\n        allowed[msg.sender][spender] -= subtractedValue;\r\n        emit Approval(msg.sender, spender, allowed[msg.sender][spender]);\r\n        return true;\r\n    }\r\n\r\n    function burn(uint256 amount) external {\r\n        require(amount != 0);\r\n        require(amount <= balances[msg.sender]);\r\n        _totalSupply -= amount;\r\n        balances[msg.sender] -= amount;\r\n        emit Transfer(msg.sender, address(0), amount);\r\n    }\r\n}"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}}

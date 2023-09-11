@@ -1,0 +1,26 @@
+{{
+  "language": "Solidity",
+  "sources": {
+    "1.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\n//Im Rich Bitch is a contract that is unique to that which allows each holder that is early to the token and holds the most tokens to \r\n//\"Claim\" a reward...  The fee is redistributed to the holders to which you can claim.. Be quick and get the bag...You're rich bitch.\r\npragma solidity ^0.8.0;\r\n\r\ncontract ImRichBitch {\r\n    string public name = \"Im Rich Bitch\";\r\n    string public symbol = \"Rich\";\r\n    uint256 public totalSupply = 60_000_000_00 * 10**18;\r\n    uint8 public decimals = 18;\r\n\r\n    mapping(address => uint256) public balanceOf;\r\n    mapping(address => mapping(address => uint256)) public allowance;\r\n\r\n    address public owner;\r\n\r\n    uint256 public buyFeePercent = 10;\r\n    uint256 public sellFeePercent = 10;\r\n\r\n    uint256 public constant feeRedistributionRate = 5; // Fee redistribution rate per transaction\r\n    uint256 public constant maxTransactionsWithFees = 40; // Maximum transactions with fees\r\n\r\n    uint256 public totalTransactions;\r\n\r\n    mapping(address => uint256) public feeBalance;\r\n\r\n    event Transfer(address indexed from, address indexed to, uint256 value);\r\n    event Approval(address indexed owner, address indexed spender, uint256 value);\r\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\r\n    event BuyFeePercentChanged(uint256 newBuyFeePercent);\r\n    event SellFeePercentChanged(uint256 newSellFeePercent);\r\n\r\n    constructor() {\r\n        owner = msg.sender;\r\n        balanceOf[msg.sender] = totalSupply;\r\n    }\r\n\r\n    function transfer(address _to, uint256 _value) public returns (bool success) {\r\n        require(balanceOf[msg.sender] >= _value);\r\n        require(_to != address(0));\r\n\r\n        uint256 fee = calculateFee(_value, sellFeePercent);\r\n        uint256 amountToTransfer = _value - fee;\r\n\r\n        balanceOf[msg.sender] -= _value;\r\n        balanceOf[_to] += amountToTransfer;\r\n        emit Transfer(msg.sender, _to, amountToTransfer);\r\n\r\n        if (fee > 0) {\r\n            uint256 redistributedFee = (fee * feeRedistributionRate) / 100;\r\n            feeBalance[owner] += redistributedFee;\r\n            fee -= redistributedFee;\r\n        }\r\n\r\n        updateFeePercentOnTransfer();\r\n\r\n        return true;\r\n    }\r\n\r\n    function approve(address _spender, uint256 _value) public returns (bool success) {\r\n        allowance[msg.sender][_spender] = _value;\r\n        emit Approval(msg.sender, _spender, _value);\r\n        return true;\r\n    }\r\n\r\n    function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {\r\n        require(balanceOf[_from] >= _value);\r\n        require(allowance[_from][msg.sender] >= _value);\r\n        require(_to != address(0));\r\n\r\n        uint256 fee = calculateFee(_value, sellFeePercent);\r\n        uint256 amountToTransfer = _value - fee;\r\n\r\n        balanceOf[_from] -= _value;\r\n        balanceOf[_to] += amountToTransfer;\r\n        emit Transfer(_from, _to, amountToTransfer);\r\n\r\n        if (fee > 0) {\r\n            uint256 redistributedFee = (fee * feeRedistributionRate) / 100;\r\n            feeBalance[owner] += redistributedFee;\r\n            fee -= redistributedFee;\r\n        }\r\n\r\n        updateFeePercentOnTransfer();\r\n\r\n        return true;\r\n    }\r\n\r\n    function calculateFee(uint256 _amount, uint256 _percent) internal pure returns (uint256) {\r\n        return (_amount * _percent) / 100;\r\n    }\r\n\r\n    function updateFeePercentOnTransfer() internal {\r\n        totalTransactions++;\r\n\r\n        if (totalTransactions <= maxTransactionsWithFees) {\r\n            uint256 reductionFactor = 100 - (totalTransactions * feeRedistributionRate);\r\n            uint256 newBuyFeePercent = (buyFeePercent * reductionFactor) / 100;\r\n            uint256 newSellFeePercent = (sellFeePercent * reductionFactor) / 100;\r\n\r\n            buyFeePercent = newBuyFeePercent;\r\n            sellFeePercent = newSellFeePercent;\r\n        }\r\n    }\r\n\r\n    function claimFees() public {\r\n        uint256 feeAmount = feeBalance[msg.sender];\r\n        require(feeAmount > 0, \"No fees to claim.\");\r\n\r\n        feeBalance[msg.sender] = 0;\r\n        balanceOf[msg.sender] += feeAmount;\r\n        emit Transfer(owner, msg.sender, feeAmount);\r\n    }\r\n\r\n    function renounceOwnership() public onlyOwner {\r\n        emit OwnershipTransferred(owner, address(0));\r\n        owner = address(0);\r\n    }\r\n\r\n    modifier onlyOwner() {\r\n        require(msg.sender == owner, \"Only the owner can call this function.\");\r\n        _;\r\n    }\r\n}\r\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "devdoc",
+          "userdoc",
+          "metadata",
+          "abi"
+        ]
+      }
+    }
+  }
+}}
